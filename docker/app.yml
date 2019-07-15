@@ -1,0 +1,25 @@
+version: '3.5'
+
+services:
+    app:
+        image: "sast/restful:latest"
+        environment:
+            SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/sast"
+            SPRING_DATASOURCE_USERNAME: "sast"
+            SPRING_DATASOURCE_PASSWORD: "sast-password"
+        ports:
+            - "8080:8080"
+
+    postgresql:
+        image: "postgres:9.6-alpine"
+        ports:
+            - "5432"
+        restart: "always"
+        environment:
+            POSTGRES_USER: "sast"
+            POSTGRES_PASSWORD: "sast-password"
+            POSTGRES_DB: "sast"
+#        volumes:
+#            - type: bind
+#              source: "${DOCKER_DATA_DIRECTORY}"
+#              target: "/var/lib/postgresql/data"

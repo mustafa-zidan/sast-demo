@@ -1,0 +1,92 @@
+buildscript {
+	ext {
+		springBootVersion = '2.1.6.RELEASE'
+	}
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		jcenter()
+		maven { url "http://repo.spring.io/plugins-release" }
+		maven { url "http://repo.spring.io/milestone" }
+		maven { url "https://plugins.gradle.org/m2/" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "org.springframework.build.gradle:propdeps-plugin:0.0.7"
+		classpath "io.spring.gradle:dependency-management-plugin:0.6.1.RELEASE"
+		classpath "org.liquibase:liquibase-gradle-plugin:1.2.4"
+	}
+}
+
+plugins {
+    id 'org.liquibase.gradle' version '1.2.4'
+}
+
+apply plugin: 'java'
+apply plugin: 'org.liquibase.gradle'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
+apply plugin: 'propdeps'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'idea'
+
+defaultTasks 'bootRun'
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility=1.8
+targetCompatibility=1.8
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	jcenter()
+	maven { url 'http://repo.spring.io/milestone' }
+	maven { url 'http://repo.spring.io/snapshot' }
+	maven { url 'https://repository.jboss.org/nexus/content/repositories/releases' }
+	maven { url 'https://oss.sonatype.org/content/repositories/releases' }
+	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+	maven { url 'http://repo.maven.apache.org/maven2' }
+}
+
+configurations {
+	providedRuntime
+}
+
+dependencies {
+	compile "com.mattbertolini:liquibase-slf4j:2.0.0"
+	compile "org.springframework.boot:spring-boot-autoconfigure"
+	compile "org.springframework.boot:spring-boot-starter-aop"
+	compile "org.springframework.boot:spring-boot-starter-data-jpa"
+	compile 'org.springframework.boot:spring-boot-starter-hateoas'
+	compile'org.springframework.boot:spring-boot-starter-web'
+	compile'org.liquibase:liquibase-core'
+	compile "org.hibernate:hibernate-core:5.4.3.Final"
+	compile "org.hibernate:hibernate-validator:5.4.3.Final"
+	compile "org.hibernate:hibernate-entitymanager:5.4.3.Final"
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: '2.9.9'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.9.9'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.9'
+	runtime'org.postgresql:postgresql'
+	providedRuntime'org.springframework.boot:spring-boot-starter-tomcat'
+	testCompile'org.springframework.boot:spring-boot-starter-test'
+}
+
+
+task publish(type: Exec) {
+	doFirst {
+		copy {
+			from "docker/"
+			into "build/docker/"
+			include "*"
+		}
+		copy {
+			from "build/libs"
+			into "build/docker/"
+			include "*.war*"
+		}
+	}
+    commandLine 'docker', 'image', 'build', '-f', 'build/docker/Dockerfile', '-t', 'sast/restful', '.'
+}
+
+tasks.publish.dependsOn(bootWar)

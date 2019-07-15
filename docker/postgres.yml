@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+    restful-postgresql:
+        image: postgres:9.6-alpine
+        ports:
+            - "5432"
+        restart: always
+        environment:
+            POSTGRES_USER: sast
+            POSTGRES_PASSWORD: sast-password
+            POSTGRES_DB: sast-password
+#        volumes:
+#            - type: bind
+#              source: "${DOCKER_DATA_DIRECTORY}"
+#              target: "/var/lib/postgresql/data"
